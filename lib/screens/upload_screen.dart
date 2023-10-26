@@ -1,4 +1,7 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 
 class UploadScreen extends StatefulWidget {
   const UploadScreen({super.key});
@@ -8,6 +11,19 @@ class UploadScreen extends StatefulWidget {
 }
 
 class _UploadScreenState extends State<UploadScreen> {
+  String? imagePath;
+
+  Future<String?> selectImage() async {
+    final picker = ImagePicker();
+    XFile? pickImage = await picker.pickImage(
+      source: ImageSource.gallery,
+    );
+    if (pickImage == null) {
+      return null;
+    }
+    return pickImage.path;
+  }
+
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -42,29 +58,43 @@ class _UploadScreenState extends State<UploadScreen> {
             color: Colors.white,
             child: Center(
               child: SingleChildScrollView(
-                child: Column(
-                  children: [
-                    Container(
-                        width: 300.0,
-                        height: 300.0,
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(5.0),
-                          border: Border.all(
-                            width: 0.5,
-                            color: const Color(0xFFAAAAAA),
-                          ),
-                        ),
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: const [
-                            Icon(
-                              Icons.upload,
-                              size: 50.0,
+                child: GestureDetector(
+                  onTap: () {
+                    selectImage().then((String? path) {
+                      if (path == null) return;
+                      setState(() {
+                        imagePath = path;
+                      });
+                    });
+                  },
+                  behavior: HitTestBehavior.translucent,
+                  child: Column(
+                    children: [
+                      Container(
+                          width: 300.0,
+                          height: 300.0,
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(5.0),
+                            border: Border.all(
+                              width: 0.5,
+                              color: const Color(0xFFAAAAAA),
                             ),
-                            Text("고양이 사진 업로드")
-                          ],
-                        )),
-                  ],
+                          ),
+                          child: imagePath != null
+                              ? Image.file(File(imagePath!),
+                                  width: 200.0, height: 200.0)
+                              : Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: const [
+                                    Icon(
+                                      Icons.upload,
+                                      size: 50.0,
+                                    ),
+                                    Text("고양이 사진 업로드")
+                                  ],
+                                )),
+                    ],
+                  ),
                 ),
               ),
             ),
